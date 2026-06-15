@@ -1,0 +1,415 @@
+:root {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --green-color: #2ecc71;
+    --red-color: #ff4757;
+    --yellow-color: #f1c40f; /* Amarelo mais dourado para contraste */
+    --blue-color: #2e86de;
+    
+    --green-lit: #7bed9f;
+    --red-lit: #ff6b81;
+    --yellow-lit: #ffffcc;   /* Amarelo quase branco para brilhar */
+    --blue-lit: #54a0ff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    user-select: none;
+}
+
+.version-tag {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: monospace;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.game-board {
+    position: relative;
+    width: 90vw;
+    height: 90vw;
+    max-width: 400px;
+    max-height: 400px;
+    border-radius: 50%;
+    background-color: #333;
+    padding: 15px;
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+}
+
+@keyframes success-wave-anim {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 167, 74, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 0 50px rgba(0, 167, 74, 0);
+    }
+}
+
+.game-board.success {
+    animation: success-wave-anim 0.6s ease-out;
+}
+
+.genius-pad {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    /* Opacidade removida para cores mais vivas no mobile */
+    transition: opacity 0.1s, transform 0.1s;
+    border: 4px solid rgba(0,0,0,0.2);
+    -webkit-tap-highlight-color: transparent; /* Remove o quadrado azul no mobile */
+}
+
+.genius-pad:active {
+    transform: scale(0.98);
+}
+
+/* Formato dos botões para criar o círculo */
+.green {
+    background-color: var(--green-color);
+    border-top-left-radius: 100%;
+}
+
+.red {
+    background-color: var(--red-color);
+    border-top-right-radius: 100%;
+}
+
+.yellow {
+    background-color: var(--yellow-color);
+    border-bottom-left-radius: 100%;
+}
+
+.blue {
+    background-color: var(--blue-color);
+    border-bottom-right-radius: 100%;
+}
+
+/* Estado "Aceso" */
+.genius-pad.active, .genius-pad:active {
+    opacity: 1;
+    box-shadow: inset 0 0 40px rgba(255,255,255,0.9); /* Brilho interno forte */
+    filter: brightness(1.3); /* Aumenta a luminosidade global */
+}
+
+.genius-pad.green.active { background-color: var(--green-lit); }
+.genius-pad.red.active { background-color: var(--red-lit); }
+.genius-pad.yellow.active { background-color: var(--yellow-lit); }
+.genius-pad.blue.active { background-color: var(--blue-lit); }
+
+/* Centro do jogo */
+.center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    height: 160px;
+    background-color: #ececec;
+    border-radius: 50%;
+    border: 10px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    color: #333;
+    padding: 10px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+.panel-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.label-text {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.display-panel {
+    background-color: #222;
+    color: #e74c3c;
+    padding: 2px 5px; /* Reduzi o padding lateral */
+    border-radius: 4px;
+    width: 70px;     /* Largura fixa levemente maior que o original 60px */
+    height: 30px;    /* Altura fixa para evitar pulos */
+    display: flex;   /* Flex para centralizar o texto */
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #555;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#level-indicator {
+    font-size: 1.2rem;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 1;
+    transition: font-size 0.2s;
+}
+
+#level-indicator.small-text {
+    font-size: 0.55rem; /* Texto bem menor para caber "GAME OVER" */
+}
+
+/* Slider de Dificuldade */
+.difficulty-control {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.slider-wrapper {
+    position: relative;
+    width: 100%;
+    height: 20px; /* Altura suficiente para o thumb */
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+/* Input invisível mas funcional */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    outline: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Remove o thumb padrão do input */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* Trilho visual */
+.slider-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 6px;
+    background: #bdc3c7;
+    border-radius: 3px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Bolinha visual animada */
+.slider-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%; /* Controlado via JS */
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: #f39c12;
+    border-radius: 50%;
+    border: 2px solid #d35400;
+    z-index: 1;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.1s;
+}
+
+/* Efeitos de interação na bolinha visual */
+.slider:active ~ .slider-thumb {
+    transform: translate(-50%, -50%) scaleX(1.3) scaleY(0.9);
+    background: #e67e22;
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.6);
+}
+
+.slider:hover ~ .slider-thumb {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.slider:active:hover ~ .slider-thumb {
+    transform: translate(-50%, -50%) scaleX(1.3) scaleY(0.9);
+}
+
+.diff-legend {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.5rem;
+    color: #7f8c8d;
+    font-weight: bold;
+    margin-top: -5px; /* Sobe os números para mais perto da linha */
+}
+
+.diff-legend span {
+    transition: color 0.2s, transform 0.2s;
+}
+
+.diff-legend span.active {
+    color: #f39c12;
+}
+
+/* Botão Retangular Jogar */
+.start-btn-rect {
+    width: 40px;
+    height: 20px;
+    border-radius: 4px;
+    background-color: var(--green-color);
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.6rem;
+    line-height: 1;
+    box-shadow: 0 3px 0 #1e8449, 0 4px 4px rgba(0,0,0,0.3);
+    transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 1px; /* Ajuste visual para centralizar o triângulo */
+}
+
+.start-btn-rect:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #1e8449, inset 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.start-btn-rect:disabled {
+    background-color: #95a5a6;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: translateY(4px);
+    color: rgba(255,255,255,0.5);
+}
+
+/* LinkedIn Icon */
+.linkedin-link {
+    position: fixed;
+    bottom: 15px;
+    left: 15px; 
+    color: var(--text-color);
+    opacity: 0.6;
+    transition: transform 0.3s, opacity 0.3s, color 0.3s;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.linkedin-link svg {
+    width: 24px; 
+    height: 24px;
+}
+
+.linkedin-link:hover {
+    transform: translateY(-5px);
+    opacity: 1;
+    color: #0077b5;
+}
+
+@media (min-width: 600px) {
+    .game-board {
+        width: 450px;
+        height: 450px;
+        max-width: none;
+        max-height: none;
+    }
+    
+    .center-circle {
+        width: 220px;
+        height: 220px;
+    }
+
+    #level-indicator {
+        font-size: 1.8rem;
+    }
+    
+    #level-indicator.small-text {
+        font-size: 0.8rem;
+    }
+
+    .display-panel {
+        width: 100px; 
+        height: 40px;
+        padding: 5px;
+    }
+
+    .start-btn-rect {
+        width: 60px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .linkedin-link {
+        left: auto;
+        right: 20px; 
+        bottom: 20px;
+    }
+
+    .linkedin-link svg {
+        width: 32px; 
+        height: 32px;
+    }
+}
